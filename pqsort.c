@@ -308,11 +308,11 @@ void *partition(void *_infodata) {
   //mylib_barrier(infodata->barr, infodata->nthreads);
   pthread_barrier_wait (infodata->pbarr);
 
-  printf ("\ntid: %d ---> after barrier ", tid);
+  printf ("\ntid: %d ---> after 1st barrier ", tid);
 
   if (tid == 0) {
     // I shud do the sum and propagate
-    // modify infodata->prefix_smaller
+    // modify infodata->prefix_smaller and join the barrier
 
     printf ("\nT0: doing reaarnge");
     infodata->prefix_smaller[0] = 0;
@@ -328,22 +328,30 @@ void *partition(void *_infodata) {
       infodata->prefix_larger[j] = infodata->prefix_larger[j-1] + infodata->nGreater[j-1];
 
     //pthread_mutex_lock (&prefix_mutex);
-    pthread_cond_broadcast(&prefix_cv);
+    //pthread_cond_broadcast(&prefix_cv);
     //pthread_mutex_unlock (&prefix_mutex);
+    pthread_barrier_wait (infodata->pbarr);
     printf ("\nT0: @@ bcacst done");
   }
   else {
     printf ("\ntid %d: ---> start waiting for bcast", tid);
+    pthread_barrier_wait (infodata->pbarr);
+    #if 0
     pthread_mutex_lock (&prefix_mutex);
     pthread_cond_wait(&prefix_cv, &prefix_mutex);
     pthread_mutex_unlock (&prefix_mutex);
+    #endif
     printf ("\ntid %d: --> end bcast", tid);
   }
   
+  #if 0
   //mylib_barrier(infodata->barr, infodata->nthreads);
-    printf ("\ntid %d: --> start 2nd barr ", tid);
+  printf ("\ntid %d: --> start 2nd barr ", tid);
   pthread_barrier_wait (infodata->pbarr);
-    printf ("\ntid %d: --> END 2nd barr ", tid);
+  printf ("\ntid %d: --> END 2nd barr ", tid);
+  #endif
+
+  fflush(stdout);
 
   // all threads can now access global prefix_smaller and prefix_larger
   int offsetSmaller = infodata->prefix_smaller[tid];
@@ -357,7 +365,7 @@ void *partition(void *_infodata) {
       infodata->array[offsetLarger++] = infodata->tarray[i];
   }
 
-  #if 0
+#if 0
   // Compute prefix sum
   int j, sbackup, gbackup;
   for(j = 0; j < ceil(log(infodata->nthreads)/log(2)); j++) {
@@ -384,7 +392,7 @@ void *partition(void *_infodata) {
     else
       infodata->array[infodata->size - countb++ - 1] = infodata->tarray[i];
   }
-  #endif
+#endif
 
   free(infodata); infodata = NULL;
   pthread_exit(NULL);

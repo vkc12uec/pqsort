@@ -115,7 +115,7 @@ int *pqsort(int *array, int size, int nthreads) {
   pthread_mutex_destroy(&same_mutex);
   pthread_mutex_destroy(&prefix_mutex);
 
-  free(tarray); tarray = NULL;
+  FREE(tarray);
   return array;
 }
 
@@ -197,12 +197,6 @@ void *_pqsort(void *_pinfo_data) {
 
   }
 
-  #if 0
-  free(nSmaller); nSmaller = NULL;
-  free(nGreater); nGreater = NULL;
-  free(prefix_smaller); prefix_smaller = NULL;
-  free(prefix_larger); prefix_larger = NULL;
-  #endif
   FREE(nSmaller);
   FREE(nGreater);
   FREE(prefix_smaller);
@@ -228,20 +222,7 @@ void *_pqsort(void *_pinfo_data) {
   pthread_join(thread[0], NULL);
   pthread_join(thread[1], NULL);
 
-  /*if(small-1) {
-    pthread_t p;
-    pinfo *temp1 = init_pinfo(small-1, array, tarray, nthreads);
-    pthread_create(&p, NULL, _pqsort, (void *)temp1);
-    pthread_join(p, NULL);
-    }
-    if(greater){
-    pthread_t p;
-    pinfo *temp2 = init_pinfo(greater, array+small, tarray+small, nthreads);
-    pthread_create(&p, NULL, _pqsort, (void *)temp2);
-    pthread_join(p, NULL);
-    }*/
-
-  free(pinfo_data); pinfo_data = NULL;
+  FREE(pinfo_data);
   pthread_exit(NULL);
 }
 
@@ -264,12 +245,6 @@ void *partition(void *_infodata) {
 
   /*quicksort*/
   for(i = start; i < end; i++) {
-    /*if(infodata->array[i] == infodata->pivot) {
-      pthread_mutex_lock (&same_mutex);
-      same++;
-      pthread_mutex_unlock (&same_mutex);
-      }*/
-
     if(infodata->array[i] <= infodata->pivot)
       infodata->tarray[lesser++] = infodata->array[i];
     else
@@ -402,7 +377,7 @@ void *partition(void *_infodata) {
   }
 #endif
 
-  free(infodata); infodata = NULL;
+  FREE(infodata);
   pthread_exit(NULL);
   //return NULL;
 }

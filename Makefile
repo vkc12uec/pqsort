@@ -14,3 +14,6 @@ run: driver.c pqsort.o linear.o
 
 clean:
 	rm generate pqsort.o linear.o run
+
+logbar:
+	gcc -g -Wall -o logbarrexe logbarrier.c -lm -lpthread

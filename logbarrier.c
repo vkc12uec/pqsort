@@ -1,12 +1,15 @@
 
-#define ALONE 1
+#include "logbarrier.h"
 
+
+#if 0
 #ifdef ALONE
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
-#define MAX_THREADS 8
+#define MAX_THREADS 16
 void *barrier_test(void *s);
 #endif
 
@@ -24,12 +27,23 @@ pthread_t p_threads[MAX_THREADS];
 pthread_attr_t attr;
 #endif
 
-void mylib_init_barrier(mylob_logbarrier_t *b, int max_threads)
+#endif
+
+// uncomment if u use below 2 in self main file 
+pthread_t p_threads[MAX_THREADS];
+pthread_attr_t attr;
+
+mylob_logbarrier_t  *mylib_init_barrier (int max_threads)
   /*void mylib_init_barrier(mylob_logbarrier_t b)*/
 {
+  //mylob_logbarrier_t *b = *pb;
+  mylob_logbarrier_t *b;
   b = (struct barrier_node *) malloc (sizeof (struct barrier_node) * max_threads);
-  if (!b)
-    assert(0);
+
+  if (!b) {
+    printf ("\nbad idea");
+    //assert(0);
+  }
 
   int i;
   for (i = 0; i < max_threads; i++) {
@@ -39,6 +53,9 @@ void mylib_init_barrier(mylob_logbarrier_t *b, int max_threads)
     pthread_cond_init(&(b[i].ok_to_proceed_up), NULL);
     pthread_cond_init(&(b[i].ok_to_proceed_down), NULL);
   }
+
+  //memcpy ( (void*)&pb, (void*)b, sizeof (struct barrier_node) * max_threads);
+  return b;
   }
 
   void mylib_logbarrier (mylob_logbarrier_t *b, int num_threads, int thread_id)
@@ -64,7 +81,7 @@ void mylib_init_barrier(mylob_logbarrier_t *b, int max_threads)
           pthread_cond_signal(&(b[index].ok_to_proceed_up));
         /*
            while (b[index].count != 0)
-           */
+         */
         while (
             pthread_cond_wait(&(b[index].ok_to_proceed_down),
               &(b[index].count_lock)) != 0);
@@ -88,8 +105,8 @@ void mylib_init_barrier(mylob_logbarrier_t *b, int max_threads)
     }
   }
 
-#ifdef ALONE
-  mylob_logbarrier_t barr;
+//#ifdef ALONE
+  mylob_logbarrier_t *barr;
   main()
   {
     /* barrier tester */
@@ -98,7 +115,7 @@ void mylib_init_barrier(mylob_logbarrier_t *b, int max_threads)
     pthread_attr_init (&attr);
     pthread_attr_setscope (&attr,PTHREAD_SCOPE_SYSTEM);
 
-    mylib_init_barrier (&barr, MAX_THREADS);
+    barr = mylib_init_barrier (MAX_THREADS);
     printf ("\nI am ok");
 
     for (i=0; i< MAX_THREADS; i++)
@@ -109,10 +126,6 @@ void mylib_init_barrier(mylob_logbarrier_t *b, int max_threads)
     for (i=0; i< MAX_THREADS; i++)
       pthread_join(p_threads[i], NULL);
 
-    /*
-       for (i=0; i< MAX_THREADS; i++)
-       printf("%d ", barr[i].count);
-       */
   }
 
 
@@ -120,7 +133,8 @@ void mylib_init_barrier(mylob_logbarrier_t *b, int max_threads)
   {
     int thread_id, i, j;
     thread_id = *((int *) s);
+    printf ("\n in barr - test");
     for (i=0; i < 100; i++)
-      mylib_logbarrier(&barr, MAX_THREADS, thread_id);
+      mylib_logbarrier(barr, MAX_THREADS, thread_id);
   }
-#endif
+//#endif

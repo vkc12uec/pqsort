@@ -16,4 +16,4 @@ clean:
 	rm generate pqsort.o linear.o run
 
 logbar:
-	gcc -g -Wall -o logbarrexe logbarrier.c -lm -lpthread
+	gcc -g -o logbarrexe logbarrier.c -lm -lpthread

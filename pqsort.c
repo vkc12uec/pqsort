@@ -9,8 +9,6 @@
 
 #define FREE(x) free(x); x=NULL
 
-/*free(nSmaller); nSmaller = NULL;*/
-
 typedef struct thread_info
 {
   int size; 
@@ -205,7 +203,7 @@ void *_pqsort(void *_pinfo_data) {
   pthread_attr_destroy(&attr);
   mylib_destroy_barrier(&barr);
 
-  // Recursion
+  // divide conquer
   pthread_t thread[2];
 
   int nthreads_s = (nthreads*small) / size;
@@ -299,7 +297,6 @@ void *partition(void *_infodata) {
     printf ("\nT0: @@ debug prefix_smaller prefix_larger arrays");
     for (j=0; j<= infodata->nthreads; j++)
       printf ("\nT0: j = %d | prefix_smaller = %d | prefix_larger = %d", j, infodata->prefix_smaller[j], infodata->prefix_larger[j]);
-
     #endif
 
     pthread_barrier_wait (infodata->pbarr);
@@ -326,7 +323,6 @@ void *partition(void *_infodata) {
   }
 
   #ifdef DEBUG
-    
     pthread_barrier_wait (infodata->pbarr);
 
     // now if order is ok, then both t1 t0 are rearrenging ok.
@@ -342,40 +338,10 @@ void *partition(void *_infodata) {
   else {
     pthread_barrier_wait (infodata->pbarr);
   }
-
   #endif
 
   /*printf ("\ninfinite wait after 1st stage");*/
   /*pthread_cond_wait (&prefix_cv, &prefix_mutex);*/
-
-#if 0
-  // Compute prefix sum
-  int j, sbackup, gbackup;
-  for(j = 0; j < ceil(log(infodata->nthreads)/log(2)); j++) {
-    mylib_barrier(infodata->barr, infodata->nthreads);
-    if((tid - (1<<j)) >= 0) sbackup = infodata->nSmaller[tid - (1<<j)];
-    if((tid - (1<<j)) >= 0) gbackup = infodata->nGreater[tid - (1<<j)];
-    mylib_barrier(infodata->barr, infodata->nthreads);
-
-    if((tid - (1<<j)) >= 0) {
-      infodata->nSmaller[tid] += sbackup;
-      infodata->nGreater[tid] += gbackup;
-    }
-  }
-  mylib_barrier(infodata->barr, infodata->nthreads);
-
-  // Computing final indexes for smaller and greater values
-  int count, countb;
-  count = tid ? infodata->nSmaller[tid-1] : 0;
-  countb = tid ? infodata->nGreater[tid-1] : 0;
-
-  for(i = start; i < end; i++) {
-    if(infodata->tarray[i] <= infodata->pivot)
-      infodata->array[count++] = infodata->tarray[i];
-    else
-      infodata->array[infodata->size - countb++ - 1] = infodata->tarray[i];
-  }
-#endif
 
   FREE(infodata);
   pthread_exit(NULL);

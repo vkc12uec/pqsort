@@ -47,7 +47,8 @@ int main(int argc, char **argv)
 
   for(i = 0; i < num_elements || feof(fin); i++) {
     fscanf(fin, "%d", &input[i]);
-    fscanf(fin, "%d", &c_input[i]);
+    c_input[i] = input[i];
+    //fscanf(fin, "%d", &c_input[i]);
     }
 
   if(i < num_elements)
@@ -72,7 +73,7 @@ int main(int argc, char **argv)
   start = tim.tv_sec + (tim.tv_usec/1000000.0);
 
   // call serial sort
-  qsort(c_input, num_elements, sizeof(int), cmpint2);
+  qsort(c_input, num_elements, sizeof(int), cmpint1);
 
   end = tim.tv_sec + (tim.tv_usec/1000000.0);
   printf("Time taken (serial): %f\n\n", end - start);

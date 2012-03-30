@@ -1,3 +1,3 @@
-make; make clean all
-./generate 1000
-./run 8
+#make; make clean all
+#./generate 10000000
+./run 4
